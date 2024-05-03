@@ -6,6 +6,10 @@ const Product = sequelize.define('product', {
   name: {type: DataTypes.STRING},
   price_opt: {type: DataTypes.INTEGER},
   price_roz: {type: DataTypes.INTEGER},
+  barcode: {type: DataTypes.INTEGER},
+  count_in_box: {type: DataTypes.INTEGER},
+  weight_in_box: {type: DataTypes.INTEGER},
+  volume_in_box: {type: DataTypes.INTEGER}
 })
 
 const Brand = sequelize.define('brand', {
@@ -35,13 +39,20 @@ const TypeUser = sequelize.define('type_user', {
 
 const Basket = sequelize.define('basket', {
   id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
-  count: {type: DataTypes.INTEGER}
+  count: {type: DataTypes.INTEGER},
 })
 
 const Order = sequelize.define('order', {
   id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
   count: {type: DataTypes.INTEGER},
-  sum: {type: DataTypes.INTEGER}
+  price: {type: DataTypes.INTEGER},
+  sum: {type: DataTypes.INTEGER},
+  volume: {type: DataTypes.STRING},
+})
+
+const StatusOrder = sequelize.define('status_order', {
+  id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
+  name: {type: DataTypes.STRING}
 })
 
 //Relationships
