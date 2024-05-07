@@ -9,10 +9,7 @@ class BrandController {
     } catch (e) {
       return e
     }
-
   }
-
-
 }
 
 module.exports = new BrandController()
