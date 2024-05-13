@@ -52,8 +52,8 @@ class ProductController {
   async updateCountBasket(req, res) {
     try {
       const userId = req.userId
-      const {vendor_code, count} = req.body
-      const newItem = await Basket.update({count}, {where: {productVendorCode: vendor_code, userId}})
+      const {productVendorCode, count} = req.body
+      const newItem = await Basket.update({count}, {where: {productVendorCode, userId}})
       return res.json(newItem)
     } catch (e) {
       return e

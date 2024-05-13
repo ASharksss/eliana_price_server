@@ -8,8 +8,8 @@ const Product = sequelize.define('product', {
   price_roz: {type: DataTypes.INTEGER},
   barcode: {type: DataTypes.INTEGER},
   count_in_box: {type: DataTypes.INTEGER},
-  weight_in_box: {type: DataTypes.INTEGER},
-  volume_in_box: {type: DataTypes.INTEGER}
+  weight_in_box: {type: DataTypes.FLOAT},
+  volume_in_box: {type: DataTypes.FLOAT}
 })
 
 const Brand = sequelize.define('brand', {
