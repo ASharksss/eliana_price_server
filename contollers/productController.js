@@ -28,8 +28,8 @@ class ProductController {
     try {
       const userId = req.userId
       const {productVendorCode, count} = req.body
-      const item = await Basket.create({productVendorCode, userId, count})
-      return res.json(item)
+      const [item, created] = await Basket.findOrCreate({where: {productVendorCode, userId}, defaults: {count: 0}})
+      return res.json(created)
     } catch (e) {
       return e
     }
