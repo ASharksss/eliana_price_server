@@ -1,5 +1,6 @@
 const {Product, Basket} = require('../models/models')
-const {where} = require("sequelize");
+const reader = require('xlsx')
+const file = reader.readFile('contollers/Tutorial.xlsx')
 
 class ProductController {
 
@@ -58,7 +59,30 @@ class ProductController {
     } catch (e) {
       return e
     }
+  }
 
+  async updatePriceBasketItem(req, res) {
+    try {
+      const userId = req.userId
+      const {productVendorCode, price} = req.body
+      const newItem = await Basket.update({price}, {where: {productVendorCode, userId}})
+      return res.json(newItem)
+    } catch (e) {
+      return e
+    }
+  }
+
+  async sendExcel(req, res) {
+    try {
+      const {order} = req.body
+      console.log(order)
+      const ws = reader.utils.json_to_sheet(order)
+      reader.utils.book_append_sheet(file, ws, "Sheet4")
+      reader.writeFile(file, './Tutorial1.xlsx')
+      return res.json('вроде ок')
+    } catch (e) {
+      return e
+    }
   }
 
 }

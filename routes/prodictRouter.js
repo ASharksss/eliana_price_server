@@ -8,5 +8,7 @@ router.post('/addInBasket', isAuthorized, productController.addInBasket)
 router.get('/getBasket', isAuthorized, productController.getBasket)
 router.get('/getAll',isAuthorized, productController.getAll)
 router.put('/updateCountBasket', isAuthorized, productController.updateCountBasket)
+router.put('/updatePriceBasketItem', isAuthorized, productController.updatePriceBasketItem)
+router.post('/sendExcel', isAuthorized, productController.sendExcel)
 
 module.exports = router

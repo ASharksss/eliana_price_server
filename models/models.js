@@ -40,6 +40,7 @@ const TypeUser = sequelize.define('type_user', {
 const Basket = sequelize.define('basket', {
   id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
   count: {type: DataTypes.INTEGER},
+  price: {type: DataTypes.INTEGER, defaultValue: 0}
 })
 
 const Order = sequelize.define('order', {
