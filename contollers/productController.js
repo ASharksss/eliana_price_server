@@ -75,16 +75,27 @@ class ProductController {
   async sendExcel(req, res) {
     try {
       const {order} = req.body
-      console.log(order)
-      const ws = reader.utils.json_to_sheet(order)
+      let filtered = order.map(obj => {
+        const {
+          id,
+          product,
+          updatedAt,
+          createdAt,
+          userId,
+          productVendorCode,
+          ...rest
+        } = obj;
+        rest['name'] = product.name
+        return {...rest};
+      });
+      const ws = reader.utils.json_to_sheet(filtered)
       reader.utils.book_append_sheet(file, ws, "Sheet4")
-      reader.writeFile(file, './Tutorial1.xlsx')
+      reader.writeFile(file, './Tutorial.xlsx')
       return res.json('вроде ок')
     } catch (e) {
-      return e
+      console.log(e)
     }
   }
-
 }
 
 module.exports = new ProductController()
