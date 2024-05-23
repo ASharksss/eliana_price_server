@@ -5,6 +5,7 @@ const {isAuthorized} = require("../middleware/authMiddleware");
 
 router.post('/create', productController.createProduct)
 router.post('/addInBasket', isAuthorized, productController.addInBasket)
+router.delete('/deleteInBasket', isAuthorized, productController.deleteInBasket)
 router.get('/getBasket', isAuthorized, productController.getBasket)
 router.get('/getAll',isAuthorized, productController.getAll)
 router.put('/updateCountBasket', isAuthorized, productController.updateCountBasket)

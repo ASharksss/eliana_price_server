@@ -36,6 +36,18 @@ class ProductController {
     }
   }
 
+  async deleteInBasket(req, res) {
+    try {
+      const userId = req.userId
+      const {productVendorCode} = req.body
+      console.log(productVendorCode)
+      const item = await Basket.destroy({where: {productVendorCode, userId}})
+      return res.json(item)
+    } catch (e) {
+      return console.log(e)
+    }
+  }
+
   async getBasket(req, res) {
     try {
       const userId = req.userId
