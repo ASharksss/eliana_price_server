@@ -1,4 +1,4 @@
-const {Product, Basket} = require('../models/models')
+const {Product, Basket, Order} = require('../models/models')
 const reader = require('xlsx')
 const file = reader.readFile('contollers/Tutorial.xlsx')
 
@@ -86,8 +86,18 @@ class ProductController {
 
   async sendExcel(req, res) {
     try {
+      const userId = req.userId
       const {order} = req.body
-      let filtered = order.map(obj => {
+      const {formOrg, nameOrg} = order
+      let count = 0
+      let sum = 0
+      order.order.map(item => {
+        count += item.count
+        sum += item.price
+      })
+      const orderItem = await Order.create({userId, count, sum})
+      console.log(orderItem)
+      /*let filtered = order.order.map(obj => {
         const {
           id,
           product,
@@ -102,8 +112,8 @@ class ProductController {
       });
       const ws = reader.utils.json_to_sheet(filtered)
       reader.utils.book_append_sheet(file, ws, "Sheet4")
-      reader.writeFile(file, './Tutorial.xlsx')
-      return res.json('вроде ок')
+      reader.writeFile(file, './Tutorial.xlsx')*/
+      return res.json(orderItem)
     } catch (e) {
       console.log(e)
     }

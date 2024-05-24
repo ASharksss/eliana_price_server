@@ -51,6 +51,12 @@ const Order = sequelize.define('order', {
   volume: {type: DataTypes.STRING},
 })
 
+const ListOrder = sequelize.define('order_list', {
+  id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
+  count: {type: DataTypes.INTEGER},
+  price: {type: DataTypes.INTEGER, defaultValue: 0}
+})
+
 const StatusOrder = sequelize.define('status_order', {
   id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
   name: {type: DataTypes.STRING}
@@ -73,8 +79,8 @@ Basket.belongsTo(Product)
 User.hasMany(Basket)
 Basket.belongsTo(User)
 
-Product.hasMany(Order)
-Order.belongsTo(Product)
+Order.hasMany(ListOrder)
+ListOrder.belongsTo(Order)
 
 User.hasMany(Order)
 Order.belongsTo(User)
