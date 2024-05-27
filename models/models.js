@@ -46,9 +46,10 @@ const Basket = sequelize.define('basket', {
 const Order = sequelize.define('order', {
   id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
   count: {type: DataTypes.INTEGER},
-  price: {type: DataTypes.INTEGER},
   sum: {type: DataTypes.INTEGER},
-  volume: {type: DataTypes.STRING},
+  count_box: {type: DataTypes.INTEGER},
+  formOrg: {type: DataTypes.STRING},
+  nameOrg: {type: DataTypes.STRING}
 })
 
 const ListOrder = sequelize.define('order_list', {
@@ -56,6 +57,7 @@ const ListOrder = sequelize.define('order_list', {
   count: {type: DataTypes.INTEGER},
   price: {type: DataTypes.INTEGER, defaultValue: 0}
 })
+
 
 const StatusOrder = sequelize.define('status_order', {
   id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
@@ -82,9 +84,12 @@ Basket.belongsTo(User)
 Order.hasMany(ListOrder)
 ListOrder.belongsTo(Order)
 
+Product.hasMany(ListOrder)
+ListOrder.belongsTo(Product)
+
 User.hasMany(Order)
 Order.belongsTo(User)
 
 module.exports = {
-  Product, Category, User, TypeUser, Brand, Basket, Order
+  Product, Category, User, TypeUser, Brand, Basket, Order, ListOrder
 }

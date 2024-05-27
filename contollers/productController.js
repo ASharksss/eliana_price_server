@@ -1,4 +1,4 @@
-const {Product, Basket, Order} = require('../models/models')
+const {Product, Basket, Order, ListOrder} = require('../models/models')
 const reader = require('xlsx')
 const file = reader.readFile('contollers/Tutorial.xlsx')
 
@@ -84,19 +84,53 @@ class ProductController {
     }
   }
 
+  async getOrders(req, res) {
+    try {
+      const userId = req.userId
+      const orders = await Order.findAll({where: {userId}})
+      return res.json(orders)
+    } catch (e) {
+      return console.log(e.message)
+    }
+  }
+
+  async getOrderList(req, res) {
+    try {
+      const {id} = req.params
+      const orderList = await ListOrder.findAll({
+        where: {orderId: id},
+        include: Product
+      })
+      return res.json(orderList)
+    } catch (e) {
+      return console.log(e.message)
+    }
+  }
+
   async sendExcel(req, res) {
     try {
       const userId = req.userId
       const {order} = req.body
-      const {formOrg, nameOrg} = order
+      const {formOrg, nameOrg, generalCount} = order
+
       let count = 0
       let sum = 0
       order.order.map(item => {
         count += item.count
         sum += item.price
       })
-      const orderItem = await Order.create({userId, count, sum})
-      console.log(orderItem)
+      const orderItem = await Order.create({userId, count, sum, count_box: generalCount, formOrg, nameOrg})
+      order.order.map(async item => {
+        await ListOrder.create({
+          count: item.count,
+          price: item.price,
+          orderId: orderItem.id,
+          productVendorCode: item.product.vendor_code
+        })
+        await Basket.destroy({where: {userId, productVendorCode: item.product.vendor_code}})
+      })
+
+
       /*let filtered = order.order.map(obj => {
         const {
           id,

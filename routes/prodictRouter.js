@@ -11,5 +11,7 @@ router.get('/getAll',isAuthorized, productController.getAll)
 router.put('/updateCountBasket', isAuthorized, productController.updateCountBasket)
 router.put('/updatePriceBasketItem', isAuthorized, productController.updatePriceBasketItem)
 router.post('/sendExcel', isAuthorized, productController.sendExcel)
+router.get('/getOrders', isAuthorized, productController.getOrders)
+router.get('/getOrderList/:id', isAuthorized, productController.getOrderList)
 
 module.exports = router
