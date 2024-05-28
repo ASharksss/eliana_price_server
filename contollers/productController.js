@@ -48,6 +48,16 @@ class ProductController {
     }
   }
 
+  async deleteAllInBasket(req, res) {
+    try {
+      const userId = req.userId
+      await Basket.destroy({where: {userId}})
+      return res.json('Удалено')
+    } catch (e) {
+      return console.log(e)
+    }
+  }
+
   async getBasket(req, res) {
     try {
       const userId = req.userId
@@ -102,6 +112,21 @@ class ProductController {
         include: Product
       })
       return res.json(orderList)
+    } catch (e) {
+      return console.log(e.message)
+    }
+  }
+
+  async copyOrder(req, res) {
+    try {
+      const {list} = req.body
+      const userId = req.userId
+      const basket = await Basket.findAll({where: {userId}})
+      if (basket.length > 0) return res.json(false)
+      list.map(async item => {
+        await Basket.create({count: item.count, userId, productVendorCode: item.product.vendor_code})
+      })
+      return res.json(true)
     } catch (e) {
       return console.log(e.message)
     }
