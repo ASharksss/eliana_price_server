@@ -11,10 +11,10 @@ module.exports.isAuthorized  = function(req, res, next) {
   }
   jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
     if(err) {
-      return res.status(403).json({message: 'Ощибка доступа'})
+      return res.status(403).json({message: 'Ошибка доступа'})
     }
-    req.userId = user.id
-    req.user = user
+    req.userId = user.user.id
+    req.user = user.user
     return next();
   })
 }

@@ -1,20 +1,27 @@
 const jwt = require("jsonwebtoken");
 const bcrypt = require('bcrypt')
 const {User, TypeUser} = require("../models/models");
-const {refreshToken, generateTokens} = require("../utils");
-const generateJWT = (user) => {
-  return jwt.sign(
-    {user},
-    process.env.SECRET_KEY,
-    {expiresIn: '144h'}
-  )
-}
+const {refreshToken, generateTokens, EMAIL_USER, HTML_REGISTRATION, transporter} = require("../utils");
 
 class UserController {
   async createUser(req, res) {
     try {
-      const {short_name, INN, address, telephone, email, password, typeUserId} = req.body
-      const user = await User.create({short_name, INN, address, telephone, email, password, typeUserId})
+      const {short_name, inn, address, phone, email, password, typeUser} = req.body
+      const hashPassword = await bcrypt.hash(password, 10)
+      const user = await User.create({short_name, INN: inn, address, telephone: phone, email, password: hashPassword, typeUserId: typeUser})
+      const mailOptions = {
+        from: EMAIL_USER,
+        to: email,
+        subject: 'Регистация на сайте',
+        html: HTML_REGISTRATION(email, phone, short_name)
+      };
+      await transporter.sendMail(mailOptions, function (error, info) {
+        if (error) {
+          console.log(error);
+        } else {
+          console.log('Email sent: ' + info.response);
+        }
+      });
       return res.json(user)
     } catch (e) {
       return e
@@ -48,10 +55,10 @@ class UserController {
       if (user === null) {
         return res.status(404).json({message: 'Пользователь не найден'})
       }
-      // let comparePassword = bcrypt.compareSync(password, user.password)
-      // if (!comparePassword) {
-      //   return res.status(401).json({message: 'Неверный пароль'})
-      // }
+      let comparePassword = bcrypt.compareSync(password, user.password)
+      if (!comparePassword) {
+        return res.status(401).json({message: 'Неверный пароль'})
+      }
       const {accessToken, refreshToken} = await generateTokens(user);
       delete user.password
       delete user.updatedAt
@@ -59,12 +66,27 @@ class UserController {
       const expiresIn = new Date(new Date().setMonth(currentDate.getMonth() + 1))
       res.cookie('refreshToken', refreshToken, {
         httpOnly: true,
-        domain: 'localhost',
+        path: '/',
         expires: expiresIn,
-        secure: true,
-        sameSite: 'none'
+        // secure: true,
+        sameSite: true
       })
       return res.json({token: accessToken, email: user.email, profile: user});
+    } catch (e) {
+      return res.status(401).json({message: e.message})
+    }
+  }
+
+  async logout (req, res) {
+    try {
+      const {refreshToken} = req.cookies
+      res.cookie('refreshToken', refreshToken, {
+        httpOnly: true,
+        path: '/',
+        expires: new Date(0),
+        // secure: false,
+        sameSite: true
+      })
     } catch (e) {
       return res.status(401).json({message: e.message})
     }

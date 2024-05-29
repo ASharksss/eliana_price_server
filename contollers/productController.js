@@ -1,6 +1,7 @@
 const {Product, Basket, Order, ListOrder} = require('../models/models')
 const reader = require('xlsx')
-const file = reader.readFile('contollers/Tutorial.xlsx')
+const {transporter, EMAIL_USER, SEND_ORDER_HTML} = require("../utils");
+const file = reader.readFile('files/Order.xlsx')
 
 class ProductController {
 
@@ -135,6 +136,7 @@ class ProductController {
   async sendExcel(req, res) {
     try {
       const userId = req.userId
+      const user = req.user
       const {order} = req.body
       const {formOrg, nameOrg, generalCount} = order
 
@@ -155,8 +157,7 @@ class ProductController {
         await Basket.destroy({where: {userId, productVendorCode: item.product.vendor_code}})
       })
 
-
-      /*let filtered = order.order.map(obj => {
+      let filtered = order.order.map(obj => {
         const {
           id,
           product,
@@ -170,8 +171,27 @@ class ProductController {
         return {...rest};
       });
       const ws = reader.utils.json_to_sheet(filtered)
-      reader.utils.book_append_sheet(file, ws, "Sheet4")
-      reader.writeFile(file, './Tutorial.xlsx')*/
+      reader.utils.book_append_sheet(file, ws, "Заказ")
+      await reader.writeFileAsync(`./files/Заказ-${orderItem.id}.xlsx`, file, {},async () => {
+        const mailOptions = {
+          from: EMAIL_USER,
+          to: user.email,
+          subject: 'Ваш заказ',
+          html: SEND_ORDER_HTML(orderItem.id, user.short_name),
+          attachments: [{
+            path: `./files/Заказ-${orderItem.id}.xlsx`,
+            filename: `Заказ для ${user.short_name}`,
+            contentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+          }]
+        };
+        await transporter.sendMail(mailOptions, function (error, info) {
+          if (error) {
+            console.log(error);
+          } else {
+            console.log('Email sent: ' + info.response);
+          }
+        });
+      })
       return res.json(orderItem)
     } catch (e) {
       console.log(e)

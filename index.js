@@ -2,13 +2,16 @@ require('dotenv').config()
 const express = require('express')
 const cors = require('cors')
 const cookieParser = require('cookie-parser')
-const passport = require('passport')
 const sequelize = require('./db')
 const models = require('./models/models')
 const router = require("./routes");
 
 const app = express()
-app.use(cors())
+const originAccess = process.env.originAccess || '["http://localhost:3000"]'
+app.use(cors({
+  credentials: true, origin: JSON.parse(originAccess),
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-position'], methods: ['GET', 'POST', 'PUT', 'OPTIONS', 'DELETE']
+}))
 app.use(cookieParser())
 // app.use(passport.initialize())
 app.use(express.json())
