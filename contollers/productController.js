@@ -171,8 +171,8 @@ class ProductController {
         return {...rest};
       });
       const ws = reader.utils.json_to_sheet(filtered)
-      reader.utils.book_append_sheet(file, ws, "Заказ")
-      await reader.writeFileAsync(`./files/Заказ-${orderItem.id}.xlsx`, file, {},async () => {
+      reader.utils.book_append_sheet(file, ws, `Заказ-${orderItem.id}`)
+      await reader.writeFileAsync(`./files/Заказ-${orderItem.id}.xlsx`, file, {}, async () => {
         const mailOptions = {
           from: EMAIL_USER,
           to: user.email,

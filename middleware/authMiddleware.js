@@ -2,8 +2,21 @@ const jwt = require('jsonwebtoken')
 
 module.exports.isAuthorized  = function(req, res, next) {
   const authHeader = req.header("Authorization")
+  console.log('authHeader', authHeader)
   if (!authHeader) {
-    return res.status(401).json({message: 'Пользрватель не авторизован, отсутствует токен'})
+    const {refreshToken} = req.cookies
+    console.log('refreshToken', refreshToken)
+    jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET, (err, user) => {
+      if(err) {
+        return res.status(403).json({message: 'Ощибка доступа'})
+      }
+      req.userId = user.user.id
+      req.user = user.user
+      return next();
+    })
+    if (!refreshToken) {
+      return res.status(401).json({message: 'Пользователь не авторизован, отсутствует токен'})
+    }
   }
   const [bearer, token] = authHeader.split(" ")
   if (bearer !== "Bearer" || !token) {

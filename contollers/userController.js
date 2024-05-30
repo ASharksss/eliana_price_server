@@ -85,7 +85,7 @@ class UserController {
         path: '/',
         expires: new Date(0),
         // secure: false,
-        sameSite: true
+        sameSite: false
       })
     } catch (e) {
       return res.status(401).json({message: e.message})
@@ -97,6 +97,7 @@ class UserController {
       let currentUser = null
       const cookie = req.cookies
       const authToken = cookie.refreshToken;
+      console.log(req.cookies)
       if (!authToken) {
         return res.status(401).json({message: 'Пользрватель не авторизован, отсутствует токен'})
       }
