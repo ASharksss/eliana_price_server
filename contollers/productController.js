@@ -180,7 +180,7 @@ class ProductController {
           html: SEND_ORDER_HTML(orderItem.id, user.short_name),
           attachments: [{
             path: `./files/Заказ-${orderItem.id}.xlsx`,
-            filename: `Заказ для ${user.short_name}`,
+            filename: `Заказ ${user.short_name}`,
             contentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
           }]
         };
