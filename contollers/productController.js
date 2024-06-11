@@ -2,6 +2,7 @@ const {Product, Basket, Order, ListOrder} = require('../models/models')
 const reader = require('xlsx')
 const {transporter, EMAIL_USER, SEND_ORDER_HTML} = require("../utils");
 const file = reader.readFile('files/Order.xlsx')
+const templateWorkbook = reader.readFile('files/customerCard.xlsx')
 
 class ProductController {
 
@@ -170,9 +171,54 @@ class ProductController {
         rest['name'] = product.name
         return {...rest};
       });
-      const ws = reader.utils.json_to_sheet(filtered)
-      reader.utils.book_append_sheet(file, ws, `Заказ-${orderItem.id}`)
-      await reader.writeFileAsync(`./files/Заказ-${orderItem.id}.xlsx`, file, {}, async () => {
+
+      const wsCustomerCard = templateWorkbook.Sheets[templateWorkbook.SheetNames[0]];
+
+      const customerData = {
+        '@shortName': user.short_name,
+        '@address': user.address,
+        '@telephone': user.telephone,
+        '@email': user.email,
+        '@formOrg': formOrg,
+        '@nameOrg': nameOrg,
+        '@orderDate': new Date().toLocaleDateString()
+      };
+
+      function replaceAliases(sheet, data) {
+        const range = reader.utils.decode_range(sheet['!ref']);
+        for (let rowNum = range.s.r; rowNum <= range.e.r; rowNum++) {
+          for (let colNum = range.s.c; colNum <= range.e.c; colNum++) {
+            const cellAddress = reader.utils.encode_cell({r: rowNum, c: colNum});
+            const cell = sheet[cellAddress];
+            if (cell && typeof cell.v === 'string') {
+              for (const alias in data) {
+                if (cell.v.includes(alias)) {
+                  cell.v = cell.v.replace(alias, data[alias]);
+                }
+              }
+            }
+          }
+        }
+      }
+
+// Замена алиасов на данные в карточке заказчика
+      replaceAliases(wsCustomerCard, customerData);
+      const customerCardWorkbook = reader.utils.book_new();
+      reader.utils.book_append_sheet(customerCardWorkbook, wsCustomerCard, 'Карточка заказчика');
+
+      const ordersArray = filtered.map(order => [order.name, order.count, order.price]);
+      ordersArray.unshift(['Продукт', 'Количество', 'Сумма']);
+
+      const wsOrdersData = reader.utils.aoa_to_sheet(ordersArray);
+      reader.utils.book_append_sheet(file, wsOrdersData, `Заказ-${orderItem.id}`);
+
+      const mergedWorkbook = reader.utils.book_new();
+      reader.utils.book_append_sheet(mergedWorkbook, wsCustomerCard, 'Карточка заказчика');
+      reader.utils.book_append_sheet(mergedWorkbook, wsOrdersData, 'Заказы');
+
+      // const ws = reader.utils.json_to_sheet(filtered)
+      // reader.utils.book_append_sheet(file, ws, `Заказ-${orderItem.id}`)
+      await reader.writeFileAsync(`./files/Заказ-${orderItem.id}.xlsx`, mergedWorkbook, {}, async () => {
         const mailOptions = {
           from: EMAIL_USER,
           to: user.email,
@@ -180,11 +226,28 @@ class ProductController {
           html: SEND_ORDER_HTML(orderItem.id, user.short_name),
           attachments: [{
             path: `./files/Заказ-${orderItem.id}.xlsx`,
-            filename: `Заказ ${user.short_name}`,
+            filename: `Заказ ${user.short_name}.xlsx`,
             contentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
           }]
         };
         await transporter.sendMail(mailOptions, function (error, info) {
+          if (error) {
+            console.log(error);
+          } else {
+            console.log('Email sent: ' + info.response);
+          }
+        });
+        const mailOptionsAdmin = {
+          from: EMAIL_USER,
+          to: "four.and.one@yandex.ru",
+          subject: `Заказ-${orderItem.id} для ${user.short_name}`,
+          attachments: [{
+            path: `./files/Заказ-${orderItem.id}.xlsx`,
+            filename: `Заказ ${user.short_name}.xlsx`,
+            contentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+          }]
+        };
+        await transporter.sendMail(mailOptionsAdmin, function (error, info) {
           if (error) {
             console.log(error);
           } else {

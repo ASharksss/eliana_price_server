@@ -2,10 +2,8 @@ const jwt = require('jsonwebtoken')
 
 module.exports.isAuthorized  = function(req, res, next) {
   const authHeader = req.header("Authorization")
-  console.log('authHeader', authHeader)
   if (!authHeader) {
     const {refreshToken} = req.cookies
-    console.log('refreshToken', refreshToken)
     jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET, (err, user) => {
       if(err) {
         return res.status(403).json({message: 'Ощибка доступа'})
