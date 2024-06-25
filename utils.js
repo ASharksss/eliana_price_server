@@ -43,7 +43,7 @@ const HTML_REGISTRATION = (email, phone, short_name) => `<!DOCTYPE html>
 
 <div class="container">
     <h2>Приветсвуем ${short_name}, на нашем сайте!</h2>
-    <p>Вас зарегистрировали на сайте <a href="https://vezdesens.ru/">название сайта</a></p>
+    <p>Вас зарегистрировали на сайте <a href="https://eliana.pro/">eliana.pro</a></p>
     <p>Ваша почта для входа: ${email}</p>
     <p>Ваш номер телефона для связи: ${phone}</p>
 </div>
