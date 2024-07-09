@@ -20,7 +20,25 @@ class ProductController {
   async getAll(req, res) {
     try {
       const {categoryId} = req.query
-      const products = await Product.findAll({where: {categoryId}})
+      const products = await Product.findAll({
+        where: {categoryId},
+        attributes: ['vendor_code', 'name', 'price_opt', 'price_roz', 'barcode', 'count_in_box', 'weight_in_box', 'volume_in_box', 'image'],
+        order: [['price_roz', 'ASC']]
+      })
+      return res.json(products)
+    } catch (e) {
+      return e
+    }
+  }
+
+  async getAllAnon(req, res) {
+    try {
+      const {categoryId} = req.query
+      const products = await Product.findAll({
+        where: {categoryId},
+        attributes: ['vendor_code', 'name', 'barcode', 'count_in_box', 'weight_in_box', 'volume_in_box', 'image'],
+        order: [['price_roz', 'ASC']]
+      })
       return res.json(products)
     } catch (e) {
       return e

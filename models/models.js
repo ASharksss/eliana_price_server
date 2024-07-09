@@ -9,7 +9,8 @@ const Product = sequelize.define('product', {
   barcode: {type: DataTypes.INTEGER},
   count_in_box: {type: DataTypes.INTEGER},
   weight_in_box: {type: DataTypes.FLOAT},
-  volume_in_box: {type: DataTypes.FLOAT}
+  volume_in_box: {type: DataTypes.FLOAT},
+  image: {type: DataTypes.STRING}
 })
 
 const Brand = sequelize.define('brand', {

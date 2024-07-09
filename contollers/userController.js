@@ -87,6 +87,7 @@ class UserController {
         // secure: false,
         sameSite: false
       })
+      return res.json({message: 'ok'})
     } catch (e) {
       return res.status(401).json({message: e.message})
     }

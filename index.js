@@ -16,6 +16,7 @@ app.use(cookieParser())
 // app.use(passport.initialize())
 app.use(express.json())
 app.use('/api', router)
+app.use('/static', express.static('static'))
 
 
 const start = async () => {
