@@ -50,7 +50,12 @@ const Order = sequelize.define('order', {
   sum: {type: DataTypes.INTEGER},
   count_box: {type: DataTypes.INTEGER},
   formOrg: {type: DataTypes.STRING},
-  nameOrg: {type: DataTypes.STRING}
+  nameOrg: {type: DataTypes.STRING},
+  howToDeliver: {type: DataTypes.STRING},
+  address: {type: DataTypes.STRING},
+  recipientFormOrg: {type: DataTypes.STRING},
+  recipientNameOrg: {type: DataTypes.STRING},
+  transportCompany: {type: DataTypes.STRING}
 })
 
 const ListOrder = sequelize.define('order_list', {
@@ -59,6 +64,38 @@ const ListOrder = sequelize.define('order_list', {
   price: {type: DataTypes.INTEGER, defaultValue: 0}
 })
 
+const Company = sequelize.define('status_order', {
+  id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
+  name: {type: DataTypes.STRING},
+  formOrg: {type: DataTypes.STRING}
+})
+
+
+const Transport_company = sequelize.define('transport_company', {
+  id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
+  name: {type: DataTypes.STRING}
+})
+
+const Field_name = sequelize.define('field_name', {
+  id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
+  name: {type: DataTypes.STRING},
+  type: {type: DataTypes.STRING}
+})
+
+const Field_options = sequelize.define('field_options', {
+  id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
+  name: {type: DataTypes.STRING}
+})
+
+const Transport_company_field = sequelize.define('transport_company_field', {
+  id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true}
+})
+
+const Waybills = sequelize.define('waybills', {
+  id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
+  fieldName: {type: DataTypes.STRING},
+  textValue: {type: DataTypes.STRING},
+})
 
 const StatusOrder = sequelize.define('status_order', {
   id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
@@ -66,6 +103,21 @@ const StatusOrder = sequelize.define('status_order', {
 })
 
 //Relationships
+
+Transport_company.hasMany(Waybills)
+Waybills.belongsTo(Transport_company)
+
+Order.hasMany(Waybills)
+Waybills.belongsTo(Order)
+
+Transport_company.hasMany(Transport_company_field)
+Transport_company_field.belongsTo(Transport_company)
+
+Field_name.hasMany(Transport_company_field)
+Transport_company_field.belongsTo(Field_name)
+
+Field_name.hasMany(Field_options)
+Field_options.belongsTo(Field_name)
 
 Brand.hasMany(Product)
 Product.belongsTo(Brand)
@@ -91,6 +143,9 @@ ListOrder.belongsTo(Product)
 User.hasMany(Order)
 Order.belongsTo(User)
 
+User.hasMany(Company)
+Company.belongsTo(User)
+
 module.exports = {
-  Product, Category, User, TypeUser, Brand, Basket, Order, ListOrder
+  Product, Category, User, TypeUser, Brand, Basket, Order, ListOrder, Transport_company, Field_options, Field_name, Transport_company_field, Waybills
 }

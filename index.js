@@ -25,7 +25,7 @@ const start = async () => {
     await sequelize.sync().then(result => {
       console.log(result)
     }).catch(e => console.log(e))
-    app.listen(5000, () => {
+    app.listen(5001, () => {
       console.log('Port started')
     })
   } catch (e) {
