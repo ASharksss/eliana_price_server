@@ -279,7 +279,8 @@ class ProductController {
         });
         const mailOptionsAdmin = {
           from: EMAIL_USER,
-          to: "kurbanalieva.alsu@yandex.ru",/*to: "four.and.one@yandex.ru",*/
+          // to: "kurbanalieva.alsu@yandex.ru",
+          to: "four.and.one@yandex.ru",
           subject: `Заказ-${orderItem.id} для ${user.short_name}`,
           attachments: [{
             path: `./files/Заказ-${orderItem.id}.xlsx`,
