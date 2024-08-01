@@ -32,14 +32,12 @@ class TransportController {
 
   async createWaybills(req, res) {
     try {
-      const {formData} = req.body
-      const formDataArray = Object.values(formData);
-      console.log(formDataArray)
+      const {formData, orderId} = req.body
       for (let [fieldName, textValue] of Object.entries(formData)) {
         await Waybills.create({
           fieldName: fieldName,
           textValue: textValue,
-          orderId: 80,
+          orderId: orderId,
           transportCompanyId: 1
         })
       }

@@ -1,4 +1,4 @@
-const {Product, Basket, Order, ListOrder} = require('../models/models')
+const {Product, Basket, Order, ListOrder, Waybills} = require('../models/models')
 const reader = require('xlsx')
 const {transporter, EMAIL_USER, SEND_ORDER_HTML} = require("../utils");
 const file = reader.readFile('files/Order.xlsx')
@@ -156,7 +156,7 @@ class ProductController {
     try {
       const userId = req.userId
       const user = req.user
-      const {order} = req.body
+      const {order, formData} = req.body
       const {formOrg, nameOrg, generalCount} = order
 
       let count = 0
@@ -175,6 +175,15 @@ class ProductController {
         })
         await Basket.destroy({where: {userId, productVendorCode: item.product.vendor_code}})
       })
+
+      for (let [fieldName, textValue] of Object.entries(formData)) {
+        await Waybills.create({
+          fieldName: fieldName,
+          textValue: textValue,
+          orderId: orderItem.id,
+          transportCompanyId: 1
+        })
+      }
 
       let filtered = order.order.map(obj => {
         const {
@@ -230,9 +239,22 @@ class ProductController {
       const wsOrdersData = reader.utils.aoa_to_sheet(ordersArray);
       reader.utils.book_append_sheet(file, wsOrdersData, `Заказ-${orderItem.id}`);
 
+      const waybills = await Waybills.findAll({
+        where: {orderId: orderItem.id},
+        attributes: ['fieldName', 'textValue'],
+        raw: true
+      })
+
+      const waybillsArray = waybills.map(waybill => [waybill.fieldName, waybill.textValue]);
+      waybillsArray.unshift(['Наименование', 'Значение']);
+
+      const wsWaybillsData = reader.utils.aoa_to_sheet(waybillsArray);
+      reader.utils.book_append_sheet(file, wsWaybillsData, `Заказ-${orderItem.id}-waybills`);
+
       const mergedWorkbook = reader.utils.book_new();
       reader.utils.book_append_sheet(mergedWorkbook, wsCustomerCard, 'Карточка заказчика');
       reader.utils.book_append_sheet(mergedWorkbook, wsOrdersData, 'Заказы');
+      reader.utils.book_append_sheet(mergedWorkbook, wsWaybillsData, 'Транспортная');
 
       // const ws = reader.utils.json_to_sheet(filtered)
       // reader.utils.book_append_sheet(file, ws, `Заказ-${orderItem.id}`)
@@ -257,7 +279,7 @@ class ProductController {
         });
         const mailOptionsAdmin = {
           from: EMAIL_USER,
-          to: "four.and.one@yandex.ru",
+          to: "kurbanalieva.alsu@yandex.ru",/*to: "four.and.one@yandex.ru",*/
           subject: `Заказ-${orderItem.id} для ${user.short_name}`,
           attachments: [{
             path: `./files/Заказ-${orderItem.id}.xlsx`,
