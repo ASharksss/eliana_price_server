@@ -16,5 +16,8 @@ router.post('/sendExcel', isAuthorized, productController.sendExcel)
 router.get('/getOrders', isAuthorized, productController.getOrders)
 router.get('/getOrderList/:id', isAuthorized, productController.getOrderList)
 router.post('/copyOrder', isAuthorized, productController.copyOrder)
+router.put('/updatePrice', isAuthorized, productController.updatePrice)
+router.get('/getProductPrices', isAuthorized, productController.getProductPrices)
+
 
 module.exports = router

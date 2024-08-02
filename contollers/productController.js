@@ -301,6 +301,36 @@ class ProductController {
       console.log(e)
     }
   }
+
+  async updatePrice(req, res) {
+    try {
+      const {products} = req.body
+      console.log(products)
+      for (let item of products) {
+        await Product.update(
+          {
+            price_roz: parseInt(item.price_roz),
+            price_opt: parseInt(item.price_opt)
+          },
+          {where: {vendor_code: item.vendor_code}})
+      }
+      return res.json('гуд')
+    } catch (e) {
+      return res.status(500).json({error: e.message})
+    }
+  }
+
+  async getProductPrices(req, res) {
+    try {
+      const products = await Product.findAll({
+        attributes: ['vendor_code', 'name', 'price_roz', 'price_opt', 'image'],
+        order: [['vendor_code', 'ASC']]
+      })
+      return res.json(products)
+    } catch (e) {
+      return res.status(500).json({error: e.message})
+    }
+  }
 }
 
 module.exports = new ProductController()
