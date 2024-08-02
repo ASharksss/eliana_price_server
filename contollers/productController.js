@@ -157,7 +157,7 @@ class ProductController {
       const userId = req.userId
       const user = req.user
       const {order, formData} = req.body
-      const {formOrg, nameOrg, generalCount} = order
+      const {formOrg, nameOrg, generalCount, paymentType} = order
 
       let count = 0
       let sum = 0
@@ -208,6 +208,7 @@ class ProductController {
         '@email': user.email,
         '@formOrg': formOrg,
         '@nameOrg': nameOrg,
+        '@paymentType': paymentType,
         '@orderDate': new Date().toLocaleDateString()
       };
 
