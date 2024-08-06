@@ -115,6 +115,28 @@ class UserController {
     }
   }
 
+  async changePassword(req, res, next) {
+    try {
+      const userId = req.userId
+      const {oldPassword, newPassword} = req.body
+      const user = await User.findOne({
+        where: {
+          id: userId
+        }
+      })
+      if (!user) return res.status(403).json({message: "Ошибка смена пароля"})
+      let comparePassword = bcrypt.compareSync(oldPassword, user.password)
+      if (!comparePassword) {
+        return res.status(401).json({message: 'Неправильный старый пароль'})
+      }
+      user.password = await bcrypt.hash(newPassword, 10)
+      await user.save()
+      return res.status(200).json({message: "Пароль изменен"})
+    } catch (e) {
+      return res.status(500).json({error: e.message})
+    }
+  }
+
 }
 
 module.exports = new UserController()
