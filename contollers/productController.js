@@ -2,7 +2,6 @@ const {Product, Basket, Order, ListOrder, Waybills} = require('../models/models'
 const reader = require('xlsx')
 const {transporter, EMAIL_USER, SEND_ORDER_HTML} = require("../utils");
 const file = reader.readFile('files/Order.xlsx')
-const templateWorkbook = reader.readFile('files/customerCard.xlsx')
 
 class ProductController {
 
@@ -158,6 +157,7 @@ class ProductController {
       const user = req.user
       const {order, formData} = req.body
       const {formOrg, nameOrg, generalCount, paymentType} = order
+      const templateWorkbook = reader.readFile('files/customerCard.xlsx')
 
       let count = 0
       let sum = 0
