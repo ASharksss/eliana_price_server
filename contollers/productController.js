@@ -1,19 +1,34 @@
-const {Product, Basket, Order, ListOrder, Waybills} = require('../models/models')
+const {Product, Basket, Order, ListOrder, Waybills, Product_photo} = require('../models/models')
 const reader = require('xlsx')
 const {transporter, EMAIL_USER, SEND_ORDER_HTML} = require("../utils");
 const file = reader.readFile('files/Order.xlsx')
 const templateWorkbook = reader.readFile('files/customerCard.xlsx')
+const {v4: uuidv4} = require('uuid')
+const path = require("path");
 
 class ProductController {
 
   async createProduct(req, res, next) {
     try {
       const {vendor_code, name, categoryId, price_opt, price_roz, brandId} = req.body
+      const files = req.files.files
+      console.log(files)
+      if (!files) {
+        return res.json('Отсутствуют изображения')
+      }
       const product =
         await Product.create({vendor_code, name, categoryId, price_opt, price_roz, brandId})
+      for (let item of files) {
+        let imageTypeFile = item.name.split('.').pop()
+        let imageName = `${uuidv4()}.${imageTypeFile}`
+        await item.mv(path.resolve(__dirname, '..', 'static/images', imageName))
+        const imageUrl = `static/images/${imageName}`
+        await Product_photo.create({photo: imageUrl, productVendorCode: vendor_code})
+      }
       return res.json(product)
     } catch (e) {
-      return e
+      console.log(e)
+      return res.json({error: e.message})
     }
   }
 
@@ -28,6 +43,19 @@ class ProductController {
       return res.json(products)
     } catch (e) {
       return e
+    }
+  }
+
+  async getOneProduct(req, res) {
+    try {
+      const {vendor_code} = req.params
+      const product = await Product.findAll({
+        where: {vendor_code},
+        include: [{model: Product_photo}]
+      })
+      return res.json(product)
+    } catch (e) {
+      return res.json({error: e.message})
     }
   }
 

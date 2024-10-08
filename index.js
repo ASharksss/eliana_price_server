@@ -1,6 +1,7 @@
 require('dotenv').config()
 const express = require('express')
 const cors = require('cors')
+const fileUpload = require('express-fileupload')
 const cookieParser = require('cookie-parser')
 const sequelize = require('./db')
 const models = require('./models/models')
@@ -15,6 +16,7 @@ app.use(cors({
 app.use(cookieParser())
 // app.use(passport.initialize())
 app.use(express.json())
+app.use(fileUpload())
 app.use('/api', router)
 app.use('/static', express.static('static'))
 
@@ -26,7 +28,7 @@ const start = async () => {
       console.log(result)
     }).catch(e => console.log(e))
     app.listen(5001, () => {
-      console.log('Port started')
+      console.log('Port started http://localhost:5001')
     })
   } catch (e) {
     console.log(e)

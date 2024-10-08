@@ -97,12 +97,20 @@ const Waybills = sequelize.define('waybills', {
   textValue: {type: DataTypes.STRING},
 })
 
+const Product_photo = sequelize.define('product_photo', {
+  id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
+  photo: {type: DataTypes.STRING}
+})
+
 const StatusOrder = sequelize.define('status_order', {
   id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
   name: {type: DataTypes.STRING}
 })
 
 //Relationships
+Product.hasMany(Product_photo)
+Product_photo.belongsTo(Product)
+
 
 Transport_company.hasMany(Waybills)
 Waybills.belongsTo(Transport_company)
@@ -147,5 +155,18 @@ User.hasMany(Company)
 Company.belongsTo(User)
 
 module.exports = {
-  Product, Category, User, TypeUser, Brand, Basket, Order, ListOrder, Transport_company, Field_options, Field_name, Transport_company_field, Waybills
+  Product,
+  Category,
+  User,
+  TypeUser,
+  Brand,
+  Basket,
+  Order,
+  ListOrder,
+  Transport_company,
+  Field_options,
+  Field_name,
+  Transport_company_field,
+  Waybills,
+  Product_photo
 }
