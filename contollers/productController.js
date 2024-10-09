@@ -49,10 +49,14 @@ class ProductController {
   async getOneProduct(req, res) {
     try {
       const {vendor_code} = req.params
-      const product = await Product.findAll({
-        where: {vendor_code},
-        include: [{model: Product_photo}]
-      })
+      console.log(vendor_code)
+      const product = await Product.findByPk(
+        vendor_code,
+        {
+          include: [{model: Product_photo}]
+        }
+
+        )
       return res.json(product)
     } catch (e) {
       return res.json({error: e.message})
