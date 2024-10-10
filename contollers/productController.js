@@ -32,6 +32,41 @@ class ProductController {
     }
   }
 
+  async updateDescription(req, res) {
+    try {
+      const {vendor_code} = req.query
+      const {description} = req.body
+      let product
+      product = await Product.findByPk(vendor_code)
+      if (product) {
+        await Product.update(
+          {description},
+          {where: {vendor_code}}
+        )
+      }
+      return res.json(product)
+    } catch (e) {
+      return res.json({error: e.message})
+    }
+  }
+
+  async attachPhoto(req, res) {
+    try {
+      const {vendor_code} = req.query
+      const files = req.files.files
+      for (let item of files) {
+        let typeFile = item.name.split('.').pop()
+        let imageName = `${uuidv4()}.${typeFile}`
+        await item.mv(path.resolve(__dirname, '..', 'static/images', imageName))
+        let imageUrl = `static/images/${imageName}`
+        await Product_photo.create({photo: imageUrl, productVendorCode: vendor_code})
+      }
+      return res.json('Готово')
+    } catch (e) {
+      return res.json({error: e.message})
+    }
+  }
+
   async getAll(req, res) {
     try {
       const {categoryId} = req.query
@@ -55,8 +90,7 @@ class ProductController {
         {
           include: [{model: Product_photo}]
         }
-
-        )
+      )
       return res.json(product)
     } catch (e) {
       return res.json({error: e.message})

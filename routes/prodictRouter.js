@@ -4,12 +4,14 @@ const productController = require('../contollers/productController')
 const {isAuthorized} = require("../middleware/authMiddleware");
 
 router.post('/create', productController.createProduct)
+router.put('/updateDescription', productController.updateDescription)
+router.post('/attachPhoto', productController.attachPhoto)
 router.post('/addInBasket', isAuthorized, productController.addInBasket)
 router.delete('/deleteInBasket', isAuthorized, productController.deleteInBasket)
 router.delete('/deleteAllInBasket', isAuthorized, productController.deleteAllInBasket)
 router.get('/getBasket', isAuthorized, productController.getBasket)
 router.get('/getAll',isAuthorized, productController.getAll)
-router.get('/getOneProduct/:vendor_code'/*isAuthorized*/, productController.getOneProduct)
+router.get('/getOneProduct/:vendor_code', isAuthorized, productController.getOneProduct)
 router.get('/getAllProducts', productController.getAllAnon)
 router.put('/updateCountBasket', isAuthorized, productController.updateCountBasket)
 router.put('/updatePriceBasketItem', isAuthorized, productController.updatePriceBasketItem)
@@ -19,6 +21,5 @@ router.get('/getOrderList/:id', isAuthorized, productController.getOrderList)
 router.post('/copyOrder', isAuthorized, productController.copyOrder)
 router.put('/updatePrice', isAuthorized, productController.updatePrice)
 router.get('/getProductPrices', isAuthorized, productController.getProductPrices)
-
 
 module.exports = router
