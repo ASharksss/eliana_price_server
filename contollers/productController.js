@@ -429,6 +429,22 @@ class ProductController {
       return res.status(500).json({error: e.message})
     }
   }
+
+  async getSimilarProduct(req, res) {
+    try {
+      const {vendor_code} = req.params
+      const product = await Product.findByPk(vendor_code)
+      const similarProducts = await Product.findAll({
+        where: {
+          price_opt: product.price_opt
+        }, attributes: ['vendor_code', 'name', 'price_opt', 'price_roz', 'image']
+      })
+      return res.json(similarProducts)
+    } catch (e) {
+      return res.json({error: e.message})
+    }
+  }
+
 }
 
 module.exports = new ProductController()

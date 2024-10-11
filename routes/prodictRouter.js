@@ -22,5 +22,6 @@ router.get('/getOrderList/:id', isAuthorized, productController.getOrderList)
 router.post('/copyOrder', isAuthorized, productController.copyOrder)
 router.put('/updatePrice', isAuthorized, productController.updatePrice)
 router.get('/getProductPrices', isAuthorized, productController.getProductPrices)
+router.get('/getSimilarProduct/:vendor_code', productController.getSimilarProduct)
 
 module.exports = router
