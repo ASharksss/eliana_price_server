@@ -5,6 +5,7 @@ const file = reader.readFile('files/Order.xlsx')
 const templateWorkbook = reader.readFile('files/customerCard.xlsx')
 const {v4: uuidv4} = require('uuid')
 const path = require("path");
+const fs = require('fs');
 
 class ProductController {
 
@@ -53,7 +54,13 @@ class ProductController {
   async attachPhoto(req, res) {
     try {
       const {vendor_code} = req.query
-      const files = req.files.files
+      let files = req.files.files
+
+      // Проверка, является ли files массивом или одиночным файлом
+      if (!Array.isArray(files)) {
+        files = [files]; // Если это один файл, преобразуем его в массив для удобной обработки
+      }
+
       for (let item of files) {
         let typeFile = item.name.split('.').pop()
         let imageName = `${uuidv4()}.${typeFile}`
@@ -61,6 +68,30 @@ class ProductController {
         let imageUrl = `static/images/${imageName}`
         await Product_photo.create({photo: imageUrl, productVendorCode: vendor_code})
       }
+      return res.json('Готово')
+    } catch (e) {
+      return res.json({error: e.message})
+    }
+  }
+
+  async deletePhoto(req, res) {
+    try {
+      const {vendor_code} = req.query
+      let imagePath
+      const photos = await Product_photo.findAll({
+        where: {productVendorCode: vendor_code}
+      })
+      for (let photo of photos) {
+        imagePath = path.resolve(__dirname, '..', photo.photo)
+      }
+      fs.unlink(imagePath, (err) => {
+        if (err) {
+          console.error(`Ошибка при удалении файла ${imagePath}:`, err.message);
+        }
+      });
+      await Product_photo.destroy({
+        where: {productVendorCode: vendor_code}
+      })
       return res.json('Готово')
     } catch (e) {
       return res.json({error: e.message})
