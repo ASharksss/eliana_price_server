@@ -4,6 +4,7 @@ const {transporter, EMAIL_USER, SEND_ORDER_HTML} = require("../utils");
 const file = reader.readFile('files/Order.xlsx')
 const templateWorkbook = reader.readFile('files/customerCard.xlsx')
 const {v4: uuidv4} = require('uuid')
+const xlsx = require('xlsx')
 const path = require("path");
 const fs = require('fs');
 
@@ -377,8 +378,8 @@ class ProductController {
         });
         const mailOptionsAdmin = {
           from: EMAIL_USER,
-          // to: "kurbanalieva.alsu@yandex.ru",
-          to: "four.and.one@yandex.ru",
+          to: "kurbanalieva.alsu@yandex.ru",
+          //to: "four.and.one@yandex.ru",
           subject: `Заказ-${orderItem.id} для ${user.short_name}`,
           attachments: [{
             path: `./files/Заказ-${orderItem.id}.xlsx`,
@@ -445,6 +446,144 @@ class ProductController {
     }
   }
 
+  async checkExcel(req, res) {
+    try {
+      // Проверяем, загружен ли файл
+      if (!req.files || !req.files.file) {
+        return res.status(400).json({message: 'Файл не загружен.'});
+      }
+      const file = req.files.file;
+
+      // Определяем путь для временного сохранения файла
+      const filePath = path.join(__dirname, '..', 'static/excel', file.name);
+
+      // Сохраняем файл временно
+      await file.mv(filePath);
+
+      // Чтение Excel-файла
+      const workbook = xlsx.readFile(filePath);
+
+      // Предполагаем, что данные находятся на первом листе
+      const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+
+      // Преобразуем данные листа в формат JSON
+      const jsonData = xlsx.utils.sheet_to_json(worksheet, {header: 1});
+
+      // Найдём столбец с заголовком "Артикул"
+      let articleColumnIndex = -1;
+      let quantityColumnIndex = -1;
+      const headerRow = jsonData[0]; // Первая строка - заголовки
+
+      // Поиск индексов столбцов "Артикул" и "Количество"
+      for (let i = 0; i < headerRow.length; i++) {
+        if (headerRow[i] === 'Артикул') {
+          articleColumnIndex = i;
+        }
+        if (headerRow[i] === 'Количество') {
+          quantityColumnIndex = i;
+        }
+      }
+
+      // Если столбцы не найдены
+      if (articleColumnIndex === -1) {
+        fs.unlinkSync(filePath);
+        return res.status(400).json({message: 'Столбец "Артикул" не найден.'});
+      }
+
+      if (quantityColumnIndex === -1) {
+        fs.unlinkSync(filePath);
+        return res.status(400).json({message: 'Столбец "Количество" не найден.'});
+      }
+
+      // Чтение данных под заголовками "Артикул" и "Количество"
+      const result = [];
+      for (let i = 1; i < jsonData.length; i++) {
+        const article = jsonData[i][articleColumnIndex];
+        const quantity = jsonData[i][quantityColumnIndex];
+
+        if (article && quantity) {
+          result.push({article, quantity});
+        }
+      }
+
+      // Удаляем временный файл после обработки
+      fs.unlinkSync(filePath);
+
+      // Ответ с найденными данными
+      return res.status(200).json({
+        message: 'Данные успешно прочитаны.',
+        data: result
+      });
+
+    } catch (e) {
+      console.error('Ошибка при обработке файла:', e);
+      return res.status(500).json({
+        message: 'Ошибка при обработке файла.',
+        error: e.message
+      });
+    }
+  }
+
+  async fillOutBasket(req, res) {
+    try {
+      const user = req.user;
+      const userId = req.userId;
+      const data = req.body;
+      // Определяем поле для цены в зависимости от типа пользователя
+      const priceField = user.typeUserId === 1 ? 'price_opt' : 'price_roz';
+
+      // Получаем все артикулы и цены в зависимости от типа пользователя
+      const products = await Product.findAll({
+        attributes: ['vendor_code', priceField],  // Динамически выбираем нужную цену
+        where: {
+          vendor_code: data.map(item => item.article) // Ищем товары по артикулам
+        }
+      });
+
+      // Преобразуем список продуктов в объект для удобства поиска цены
+      const productMap = {};
+      products.forEach(product => {
+        productMap[product.vendor_code] = product[priceField]; // Ключ - артикул, значение - цена
+      });
+
+      const addedItems = [];
+      const notAddedItems = [];
+
+      // Добавляем только те товары, артикулы которых есть в базе данных
+      for (let item of data) {
+        const productPrice = productMap[item.article]; // Получаем цену товара
+
+        if (productPrice) {
+          const totalPrice = item.quantity * productPrice; // Рассчитываем общую цену
+
+          await Basket.create({
+            count: item.quantity,
+            productVendorCode: item.article,
+            userId,
+            price: totalPrice // Устанавливаем рассчитанную цену
+          });
+
+          addedItems.push(item.article);
+        } else {
+          notAddedItems.push(item.article);
+          console.log(`Артикул ${item.article} не найден в базе данных и не был добавлен.`);
+        }
+      }
+
+      return res.status(200).json({
+        message: 'Корзина успешно заполнена.',
+        addedItems,
+        notAddedItems
+      });
+
+    } catch (e) {
+      console.error('Ошибка:', e);
+      return res.status(500).json({
+        message: 'Ошибка',
+        error: e.message
+      });
+    }
+  }
 }
 
 module.exports = new ProductController()
