@@ -529,6 +529,9 @@ class ProductController {
       const user = req.user;
       const userId = req.userId;
       const data = req.body;
+
+      await Basket.destroy({where: {userId}})
+
       // Определяем поле для цены в зависимости от типа пользователя
       const priceField = user.typeUserId === 1 ? 'price_opt' : 'price_roz';
 
