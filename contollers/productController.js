@@ -557,10 +557,32 @@ class ProductController {
         const productPrice = productMap[item.article]; // Получаем цену товара
 
         if (productPrice) {
-          const totalPrice = item.quantity * productPrice; // Рассчитываем общую цену
+          let quantity = item.quantity;
+
+          // Проверка для пользователей с типом typeUserId === 1 и артикулов, начинающихся на "WW-"
+          if (user.typeUserId === 1 && item.article.startsWith("WW-")) {
+            // Округляем до ближайшего кратного 20
+            const remainder = quantity % 20; // Остаток от деления на 20
+
+            if (remainder !== 0) {
+              // Вычисляем кратные 20 ближайшие сверху и снизу
+              const lowerMultiple = quantity - remainder; // Меньший кратный 20
+              const upperMultiple = lowerMultiple + 20; // Больший кратный
+              // Округляем к ближайшему кратному 20
+              if (remainder < 10) {
+                quantity = lowerMultiple; // Ближе к меньшему
+              } else {
+                quantity = upperMultiple; // Ближе к большему
+              }
+
+              console.log(`Количество для артикула ${item.article} было скорректировано до ${quantity}.`);
+            }
+          }
+
+          const totalPrice = quantity * productPrice; // Рассчитываем общую цену
 
           await Basket.create({
-            count: item.quantity,
+            count: quantity,
             productVendorCode: item.article,
             userId,
             price: totalPrice // Устанавливаем рассчитанную цену
@@ -585,6 +607,35 @@ class ProductController {
         message: 'Ошибка',
         error: e.message
       });
+    }
+  }
+
+  async exportVendorCodes(req, res) {
+    try {
+      const vendorCodes = await Product.findAll({
+        attributes: ['vendor_code', 'name']
+      })
+      const data = vendorCodes.map(item => ({
+        vendor_code: item.vendor_code,
+        name: item.name
+      }))
+      const worksheet = xlsx.utils.json_to_sheet(data)
+      const workbook = xlsx.utils.book_new()
+      xlsx.utils.book_append_sheet(workbook, worksheet, 'Users');
+
+      //Генерация файла
+      const filePath = 'users.xlsx';
+      xlsx.writeFile(workbook, filePath);
+
+      // Отправка файла клиенту
+      res.download(filePath, (err) => {
+        if (err) {
+          console.error(err);
+          res.status(500).send('Ошибка при отправке файла');
+        }
+      });
+    } catch (e) {
+      return res.status(500).json({error: e.message})
     }
   }
 }

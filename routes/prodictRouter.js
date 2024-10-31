@@ -26,5 +26,6 @@ router.get('/getProductPrices', isAuthorized, productController.getProductPrices
 router.get('/getSimilarProduct/:vendor_code', productController.getSimilarProduct)
 router.post('/checkExcel', productController.checkExcel)
 router.post('/fillOutBasket', isAuthorized, productController.fillOutBasket)
+router.get('/exportVendorCodes', productController.exportVendorCodes)
 
 module.exports = router
